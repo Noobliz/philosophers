@@ -1,17 +1,17 @@
 
 #include "philo.h"
 
-void	free_all(t_philo *philos, pthread_t *threads, pthread_mutex_t *fork)
+void	free_all(t_data *data)
 {
-	if (philos)
-		free(philos);
-	philos = NULL;
-	if (threads)
-		free(threads);
-	threads = NULL;
-	if (fork)
-		free(fork);
-	fork = NULL;
+	if (data->philos)
+		free(data->philos);
+	data->philos = NULL;
+	if (data->threads)
+		free(data->threads);
+	data->threads = NULL;
+	if (data->fork)
+		free(data->fork);
+	data->fork = NULL;
 }
 
 void	print_philos(t_philo *philos, int amount)
@@ -31,7 +31,7 @@ void	print_philos(t_philo *philos, int amount)
 	}
 }
 
-void	init_philos(char **argv, t_philo *philos, pthread_mutex_t *fork)
+void	init_philos(char **argv, t_data *data)
 {
 	int	amount_philos;
 	int	i;
@@ -40,17 +40,37 @@ void	init_philos(char **argv, t_philo *philos, pthread_mutex_t *fork)
 	i = 0;
 	while (i < amount_philos)
 	{
-		philos[i].id = i + 1;
-		philos[i].nb_of_philos = amount_philos;
-		philos[i].time_to_die = safe_atoi(argv[2]);
-		philos[i].time_to_eat = safe_atoi(argv[3]);
-		philos[i].time_to_sleep = safe_atoi(argv[4]);
+		data->philos[i].id = i + 1;
+		data->philos[i].nb_of_philos = amount_philos;
+		data->philos[i].time_to_die = safe_atoi(argv[2]);
+		data->philos[i].time_to_eat = safe_atoi(argv[3]);
+		data->philos[i].time_to_sleep = safe_atoi(argv[4]);
 		if (argv[5])
-			philos[i].nb_times_to_eat = safe_atoi(argv[5]);
+			data->philos[i].nb_times_to_eat = safe_atoi(argv[5]);
 		else
-			philos[i].nb_times_to_eat = -1;
-		philos[i].left_fork = &fork[i];
-		philos[i].right_fork = &fork[(i + 1) % amount_philos];
+			data->philos[i].nb_times_to_eat = -1;
+		data->philos[i].left_fork = &data->fork[i];
+		data->philos[i].right_fork = &data->fork[(i + 1) % amount_philos];
+		data->philos[i].print_mutex = &data->print_mutex;
 		i++;
 	}
+}
+
+int	alloc_philos_threads(char **argv, t_philo **philos, pthread_t **threads)
+{
+	int amount_philos;
+
+	amount_philos = safe_atoi(argv[1]);
+	*philos = malloc(sizeof(t_philo) * amount_philos);
+	*threads = malloc(sizeof(pthread_t) * amount_philos);
+	if (!*philos || !*threads)
+	{
+		perror("malloc");
+		if (*philos)
+			free(*philos);
+		else
+			free(*threads);
+		return (-1);
+	}
+	return (1);
 }
