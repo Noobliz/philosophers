@@ -151,7 +151,8 @@ int	main(int argc, char **argv)
 	data.threads = NULL;
 	if (!(valid_input(argc, argv)))
 		return (1);
-	init_data(&data, argv);
+	if (!init_data(&data, argv))
+		return (1);
 	init_philos(argv, &data);
 	if (!fork_init(&data))
 		return (1);
