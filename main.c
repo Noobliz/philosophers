@@ -104,15 +104,15 @@ void	*routine(void *arg)
 	int i = 0;
 	while (i < 3)
 	{
-		//pthread_mutex_lock(philo->left_fork);
+		pthread_mutex_lock(philo->left_fork);
 		safe_print(philo, "has taken the left fork 🥢");
 		pthread_mutex_lock(philo->right_fork);
 		safe_print(philo, "has taken the right fork 🥢");
 
 		safe_print(philo, "is eating 🍝");
-		usleep(philo->time_to_eat * 1000); // conversion
+		usleep(philo->time_to_eat * 1000);
 
-		//pthread_mutex_unlock(philo->right_fork);
+		pthread_mutex_unlock(philo->right_fork);
 		pthread_mutex_unlock(philo->left_fork);
 
 		safe_print(philo, "is sleeping 😴");
