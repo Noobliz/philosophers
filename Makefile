@@ -1,7 +1,8 @@
 CC=cc
-FLAGS=-Wall -Werror -Wextra -g
+FLAGS=-Wall -Werror -Wextra -g -pthread
 SRC=main.c\
-str_utils.c
+str_utils.c \
+utils.c
 
 NAME=philo
 

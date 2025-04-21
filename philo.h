@@ -1,13 +1,13 @@
 
+
 #ifndef	PHILO_H
 # define PHILO_H
-# ifndef MAX_PHILO
-#  define MAX_PHILO 200
-# endif
 
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
+#include <pthread.h>
 
 typedef struct	s_philo
 {
@@ -17,12 +17,32 @@ typedef struct	s_philo
 	size_t	time_to_eat;
 	size_t	time_to_sleep;
 	int	nb_times_to_eat;
+
+	pthread_mutex_t	*left_fork;
+	pthread_mutex_t	*right_fork;
+	pthread_mutex_t	*print_mutex;
 }	t_philo;
 
+typedef struct	data
+{
+	pthread_mutex_t print_mutex;
+	pthread_mutex_t	*fork; //tab de fork
+	t_philo	*philos;
+	pthread_t *threads;
+}	t_data;
+
+
+//str_utils
 void	print(char *str, int fd, int space);
 int		valid_input(int argc, char **argv);
 int		safe_atoi(char *str);
 
+//utils
+void	free_all(t_philo *philos, pthread_t *threads, pthread_mutex_t *fork);
+void	print_philos(t_philo *philos, int amount);
+void	init_philos(char **argv, t_philo *philos, pthread_mutex_t *fork);
 
+
+void	*routine(void *arg);
 #endif
 
