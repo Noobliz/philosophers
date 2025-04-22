@@ -9,6 +9,11 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+
+#include<sys/time.h>
+
+
+
 typedef struct	s_philo
 {
 	int	id;
@@ -17,6 +22,8 @@ typedef struct	s_philo
 	size_t	time_to_eat;
 	size_t	time_to_sleep;
 	int	nb_times_to_eat;
+
+	time_t	start_time;
 
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
@@ -27,7 +34,7 @@ typedef struct	s_data
 {
 	t_philo	*philos;
 	pthread_t *threads;
-	pthread_mutex_t	*fork; //tab de fork
+	pthread_mutex_t	*fork;
 	pthread_mutex_t print_mutex;
 }	t_data;
 
@@ -44,5 +51,7 @@ void	init_philos(char **argv, t_data *data);
 int		alloc_philos_threads(char **argv, t_philo **philos, pthread_t **threads);
 
 void	*routine(void *arg);
+time_t    get_current_time(void);
+
 #endif
 

@@ -45,6 +45,7 @@ void	init_philos(char **argv, t_data *data)
 		data->philos[i].time_to_die = safe_atoi(argv[2]);
 		data->philos[i].time_to_eat = safe_atoi(argv[3]);
 		data->philos[i].time_to_sleep = safe_atoi(argv[4]);
+		data->philos[i].start_time = get_current_time();
 		if (argv[5])
 			data->philos[i].nb_times_to_eat = safe_atoi(argv[5]);
 		else
@@ -65,7 +66,7 @@ int	alloc_philos_threads(char **argv, t_philo **philos, pthread_t **threads)
 	*threads = malloc(sizeof(pthread_t) * amount_philos);
 	if (!*philos || !*threads)
 	{
-		perror("malloc");
+		perror("malloc"); //PERROR FORBIDEN !!!!!!
 		if (*philos)
 			free(*philos);
 		else

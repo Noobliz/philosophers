@@ -1,11 +1,29 @@
 
 #include "philo.h"
 
+
+time_t    get_current_time(void)
+{
+    struct timeval    time;
+    time_t            current_time;
+
+    if (gettimeofday(&time, NULL) == -1)
+        write(2, "error in gettimeofday process\n", 31);
+    current_time = time.tv_sec * 1000 + time.tv_usec / 1000;
+    return (current_time);
+}
+
+
 void safe_print(t_philo *philo, const char *msg)
 {
+	time_t	time;
+
+	
+	
 	pthread_mutex_lock(philo->print_mutex);
-	printf("Philo[%d] %s\n", philo->id, msg);
-	fflush(stdout); 
+	time = get_current_time() - philo->start_time;
+	// printf("Philo[%d] %s\n", philo->id, msg);
+	printf("[%ld]Philo[%d] %s\n", time, philo->id, msg);
 	pthread_mutex_unlock(philo->print_mutex);
 }
 
@@ -58,6 +76,7 @@ int	fork_init(t_data *data)
 	}
 	return (1);
 }
+
 void	join_destroy(t_data *data)
 {
 	int	i;
@@ -76,11 +95,13 @@ void	join_destroy(t_data *data)
 	}
 	pthread_mutex_destroy(&data->print_mutex);
 }
+
 int	print_init(t_data *data)
 {
 	if (pthread_mutex_init(&data->print_mutex, NULL) != 0)
 	{
 		perror("print_mutex init");
+		free_all(data);
 		return (0);
 	}
 	return (1);
@@ -104,6 +125,8 @@ void	*routine(void *arg)
 	int i = 0;
 	while (i < 3)
 	{
+		if (philo->id != philo->id % 2)
+			usleep(1);
 		pthread_mutex_lock(philo->left_fork);
 		safe_print(philo, "has taken the left fork 🥢");
 		pthread_mutex_lock(philo->right_fork);
@@ -137,10 +160,7 @@ int	init_data(t_data *data, char **argv)
 		return (-1);
 	}
 	if (!print_init(data))
-	{
-		free_all(data);
 		return (0);
-	}
 	return (1);
 }
 int	main(int argc, char **argv)
@@ -170,6 +190,12 @@ int	main(int argc, char **argv)
 // 	pthread_mutex_t	*fork;
 // 	t_data	data;
 // 	int	amount_philos;
+
+
+
+// (:
+
+
 
 // 	philos = NULL;
 // 	threads = NULL;
