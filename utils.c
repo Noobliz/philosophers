@@ -12,6 +12,9 @@ void	free_all(t_data *data)
 	if (data->fork)
 		free(data->fork);
 	data->fork = NULL;
+	if (data->big_brother)
+		free(data->big_brother);
+	data->big_brother = NULL;
 }
 
 void	print_philos(t_philo *philos, int amount)
@@ -31,7 +34,7 @@ void	print_philos(t_philo *philos, int amount)
 	}
 }
 
-void	init_philos(char **argv, t_data *data)
+int	init_philos(char **argv, t_data *data)
 {
 	int	amount_philos;
 	int	i;
@@ -53,8 +56,16 @@ void	init_philos(char **argv, t_data *data)
 		data->philos[i].left_fork = &data->fork[i];
 		data->philos[i].right_fork = &data->fork[(i + 1) % amount_philos];
 		data->philos[i].print_mutex = &data->print_mutex;
+		data->philos[i].stop_mutex = &data->stop_mutex;
+		data->philos[i].eating_mutex = &data->eating_mutex;
+		data->philos[i].stop = &data->stop;
+		data->philos[i].meals_flag = 0;
+		//data->philos[i].last_meal = get_current_time();
 		i++;
 	}
+	if (!eating_init(data))
+		return (0);
+	return (1);
 }
 
 int	alloc_philos_threads(char **argv, t_philo **philos, pthread_t **threads)
@@ -66,7 +77,7 @@ int	alloc_philos_threads(char **argv, t_philo **philos, pthread_t **threads)
 	*threads = malloc(sizeof(pthread_t) * amount_philos);
 	if (!*philos || !*threads)
 	{
-		perror("malloc"); //PERROR FORBIDEN !!!!!!
+		write(2, "malloc\n", 7); //PERROR FORBIDEN !!!!!!
 		if (*philos)
 			free(*philos);
 		else
@@ -74,4 +85,20 @@ int	alloc_philos_threads(char **argv, t_philo **philos, pthread_t **threads)
 		return (-1);
 	}
 	return (1);
+}
+
+void safe_print(t_philo *philo, const char *msg)
+{
+	time_t	time;
+
+	
+	
+	pthread_mutex_lock(philo->print_mutex);
+	pthread_mutex_lock(philo->stop_mutex);
+	time = get_current_time() - philo->start_time;
+	// printf("Philo[%d] %s\n", philo->id, msg);
+	if(*(philo->stop) == 0 || strcmp(msg, "is dead !!!") == 0)
+	printf("[%ld]Philo[%d] %s\n", time, philo->id, msg);
+	pthread_mutex_unlock(philo->print_mutex);
+	pthread_mutex_unlock(philo->stop_mutex);
 }
