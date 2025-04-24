@@ -93,12 +93,12 @@ void safe_print(t_philo *philo, const char *msg)
 
 	
 	
-	pthread_mutex_lock(philo->print_mutex);
 	pthread_mutex_lock(philo->stop_mutex);
+	pthread_mutex_lock(philo->print_mutex);
 	time = get_current_time() - philo->start_time;
 	// printf("Philo[%d] %s\n", philo->id, msg);
-	if(*(philo->stop) == 0 || strcmp(msg, "is dead !!!") == 0)
-	printf("[%ld]Philo[%d] %s\n", time, philo->id, msg);
+	if(*(philo->stop) == 0 || strcmp(msg, "is dead !!!") == 0) // a remplacer par ft
+		printf("[%ld]Philo[%d] %s\n", time, philo->id, msg);
 	pthread_mutex_unlock(philo->print_mutex);
 	pthread_mutex_unlock(philo->stop_mutex);
 }

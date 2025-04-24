@@ -151,22 +151,37 @@ int	print_init(t_data *data)
 void	*routine(void *arg)
 {
 	t_philo *philo = (t_philo *)arg;
-	int i = 0;
 	int	meals_eaten;
+	pthread_mutex_t	*tmp_fork1;
+	pthread_mutex_t	*tmp_fork2;
 	
+
+	//pr que les locks soient tjrs dans ordre A -> B 
+	if (philo->left_fork < philo->right_fork)
+	{
+		tmp_fork1 = philo->left_fork;
+		tmp_fork2 = philo->right_fork;
+	}
+	else
+	{
+		tmp_fork1 = philo->right_fork;
+		tmp_fork2 = philo->left_fork;
+	}
 	meals_eaten = 0;
 	while (1)
 	{
 		if (philo->id % 2 == 0)
 			usleep(1000);
-		pthread_mutex_lock(philo->left_fork);
+		pthread_mutex_lock(tmp_fork1);
 		safe_print(philo, "has taken the left fork 🥢");
-		pthread_mutex_lock(philo->right_fork);
+
+		pthread_mutex_lock(tmp_fork2);
 		safe_print(philo, "has taken the right fork 🥢");
 
-		pthread_mutex_lock(philo->eating_mutex); // pr futur nb de repas
+		pthread_mutex_lock(philo->eating_mutex);
 		philo->last_meal = get_current_time();
-		safe_print(philo, "is eating 🍝");
+		//if (*(philo->stop) == 0)
+			safe_print(philo, "is eating 🍝");
 		if (philo->nb_times_to_eat > 0)
 		{
 			meals_eaten++;
@@ -180,13 +195,15 @@ void	*routine(void *arg)
 		pthread_mutex_unlock(philo->eating_mutex);
 		usleep(philo->time_to_eat * 1000);
 
-		pthread_mutex_unlock(philo->right_fork);
-		pthread_mutex_unlock(philo->left_fork);
+		pthread_mutex_unlock(tmp_fork2);
+		pthread_mutex_unlock(tmp_fork1);
 
-		safe_print(philo, "is sleeping 😴");
-		usleep(philo->time_to_sleep * 1000);
-
-		safe_print(philo, "is thinking 🧠");
+		// if (*(philo->stop) == 0)
+		// {
+			safe_print(philo, "is sleeping 😴");
+			usleep(philo->time_to_sleep * 1000);
+			safe_print(philo, "is thinking 🧠");
+		//}
 		pthread_mutex_lock(philo->stop_mutex);
 		if (*(philo->stop) == 1)
 		{
@@ -194,7 +211,6 @@ void	*routine(void *arg)
 			return (NULL);
 		}
 		pthread_mutex_unlock(philo->stop_mutex);
-		i++;
 	}
 	return NULL;
 }
