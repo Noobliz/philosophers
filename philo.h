@@ -42,7 +42,7 @@ typedef struct	s_data
 	int	stop;
 	t_philo	*philos;
 	pthread_t *threads;
-	pthread_t	*big_brother;
+	pthread_t	big_brother;
 	pthread_mutex_t	stop_mutex;
 	pthread_mutex_t	*fork;
 	pthread_mutex_t print_mutex;

@@ -12,9 +12,9 @@ void	free_all(t_data *data)
 	if (data->fork)
 		free(data->fork);
 	data->fork = NULL;
-	if (data->big_brother)
-		free(data->big_brother);
-	data->big_brother = NULL;
+	// if (data->big_brother)
+	// 	free(data->big_brother);
+	// data->big_brother = NULL;
 }
 
 void	print_philos(t_philo *philos, int amount)
@@ -48,7 +48,7 @@ int	init_philos(char **argv, t_data *data)
 		data->philos[i].time_to_die = safe_atoi(argv[2]);
 		data->philos[i].time_to_eat = safe_atoi(argv[3]);
 		data->philos[i].time_to_sleep = safe_atoi(argv[4]);
-		data->philos[i].start_time = get_current_time();
+		//data->philos[i].start_time = get_current_time();
 		if (argv[5])
 			data->philos[i].nb_times_to_eat = safe_atoi(argv[5]);
 		else

@@ -30,6 +30,7 @@ int	create_threads(t_data *data)
 	while (i < data->philos_amount)
 	{
 		data->philos[i].last_meal = data->start_time;
+		data->philos[i].start_time = data->start_time;
 		i++;
 	}
 	i = 0;
@@ -117,7 +118,7 @@ void	join_destroy(t_data *data)
 		pthread_join(data->threads[i], NULL);
 		i++;
 	}
-	pthread_join(*(data->big_brother), NULL);
+	pthread_join(data->big_brother, NULL);
 	i = 0;
 	while(i < data->philos->nb_of_philos)
 	{
@@ -154,18 +155,10 @@ void	*routine(void *arg)
 	int	meals_eaten;
 	
 	meals_eaten = 0;
-	// size_t	time;
-	// time = get_current_time();
-	// while (time < philo->last_meal)
-	// {
-	// 	usleep(50);
-	// 	time = get_current_time();
-	// }
-	//philo->meals_eaten = 0;
 	while (1)
 	{
 		if (philo->id % 2 == 0)
-			usleep(1);
+			usleep(1000);
 		pthread_mutex_lock(philo->left_fork);
 		safe_print(philo, "has taken the left fork 🥢");
 		pthread_mutex_lock(philo->right_fork);
@@ -177,9 +170,9 @@ void	*routine(void *arg)
 		if (philo->nb_times_to_eat > 0)
 		{
 			meals_eaten++;
-			pthread_mutex_lock(philo->print_mutex);
-			printf("philo[%d] meals[%d]\n", philo->id, meals_eaten);
-			pthread_mutex_unlock(philo->print_mutex);
+			// pthread_mutex_lock(philo->print_mutex);
+			// printf("philo[%d] meals[%d]\n", philo->id, meals_eaten);
+			// pthread_mutex_unlock(philo->print_mutex);
 			if (meals_eaten == philo->nb_times_to_eat)
 				philo->meals_flag = 1;
 
@@ -209,13 +202,13 @@ void	*routine(void *arg)
 int	init_data(t_data *data, char **argv)
 {
 	data->stop = 0;
-	data->big_brother = NULL;
+	//data->big_brother = NULL;
 	data->philos_amount = safe_atoi(argv[1]);
 	if (!alloc_philos_threads(argv, &data->philos, &data->threads))
 	return (-1);
-	data->big_brother = malloc(sizeof(pthread_mutex_t));
+	//data->big_brother = malloc(sizeof(pthread_mutex_t));
 	data->fork = malloc(sizeof(pthread_mutex_t) * data->philos_amount);
-	if (!data->fork || !data->big_brother)
+	if (!data->fork)
 	{
 		free_all(data);
 		return (-1);
@@ -240,7 +233,7 @@ int	main(int argc, char **argv)
 		return (1);
 	if (!create_threads(&data))
 		return (1);
-	pthread_create(data.big_brother, NULL, &is_watching, &data);
+	pthread_create(&data.big_brother, NULL, &is_watching, &data);
 	join_destroy(&data);
 	//print_philos(philos, philos->nb_of_philos);
 	free_all(&data);

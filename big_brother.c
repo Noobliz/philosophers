@@ -17,6 +17,7 @@ void	*is_watching(void *arg)
 
 	while(1)
 	{
+		count = 0;
 		i = 0;
 		while (i < data->philos_amount)
 		{
@@ -54,7 +55,6 @@ void	*is_watching(void *arg)
 			pthread_mutex_unlock(&data->stop_mutex);
 			i++;
 		}
-		count = 0;
 		usleep(1000);
 	}
 	return (NULL);
