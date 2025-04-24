@@ -1,4 +1,14 @@
-
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lguiet <lguiet@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/24 14:54:55 by lguiet            #+#    #+#             */
+/*   Updated: 2025/04/24 16:49:17 by lguiet           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #ifndef	PHILO_H
 # define PHILO_H
@@ -66,7 +76,7 @@ int		alloc_philos_threads(char **argv, t_philo **philos, pthread_t **threads);
 int		eating_init(t_data *data);
 void	*routine(void *arg);
 size_t    get_current_time(void);
-void	ft_sleep(size_t duration_ms);
+void	ft_sleep(size_t duration_ms, t_philo *philos);
 
 //big_brother
 void	*is_watching(void *arg);

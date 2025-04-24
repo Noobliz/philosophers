@@ -1,22 +1,41 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lguiet <lguiet@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/24 14:54:32 by lguiet            #+#    #+#             */
+/*   Updated: 2025/04/24 17:26:39 by lguiet           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "philo.h"
 
-void	ft_sleep(size_t duration_ms)
+void	ft_sleep(size_t duration_ms, t_philo *philos)
 {
 	size_t	start;
 
 	start = get_current_time();
 	while ((get_current_time() - start) < duration_ms)
-		usleep(50);
+	{
+		pthread_mutex_lock(philos->stop_mutex);
+		if (*(philos)->stop == 1)
+		{
+			pthread_mutex_unlock(philos->stop_mutex);
+			break;
+		}
+		pthread_mutex_unlock(philos->stop_mutex);
+		usleep(1);
+
+	}
 }
 size_t    get_current_time(void)
 {
     struct timeval    time;
-    //time_t            current_time;
 
     if (gettimeofday(&time, NULL) == -1)
         write(2, "error in gettimeofday process\n", 31);
-    //current_time = (time.tv_sec * 1000) + (time.tv_usec / 1000);
     return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }
 
@@ -55,26 +74,6 @@ int	create_threads(t_data *data)
 }
 int	eating_init(t_data *data)
 {
-	// int	i;
-	// int	j;
-
-	// i = 0;
-	// j = 0;
-	// while (i < data->philos_amount)
-	// {
-	// 	if (pthread_mutex_init(&data->philos[i].eating_mutex, NULL) != 0)
-	// 	{
-	// 		write(2, "mutex init\n", 10);
-	// 		while(j < i)
-	// 		{
-	// 			pthread_mutex_destroy(&data->philos[j].eating_mutex);
-	// 			j++;
-	// 		}
-	// 		free_all(data);
-	// 		return (0);
-	// 	}
-	// 	i++;
-	// }
 	if (pthread_mutex_init(&data->eating_mutex, NULL) != 0)
 	{
 		write(2, "mutex init\n", 10);
@@ -123,7 +122,6 @@ void	join_destroy(t_data *data)
 	while(i < data->philos->nb_of_philos)
 	{
 		pthread_mutex_destroy(&data->fork[i]);
-		//pthread_mutex_destroy(&data->philos[i].eating_mutex);
 		i++;
 	}
 	pthread_mutex_destroy(&data->print_mutex);
@@ -152,37 +150,47 @@ void	*routine(void *arg)
 {
 	t_philo *philo = (t_philo *)arg;
 	int	meals_eaten;
-	pthread_mutex_t	*tmp_fork1;
-	pthread_mutex_t	*tmp_fork2;
-	
 
-	//pr que les locks soient tjrs dans ordre A -> B 
-	if (philo->left_fork < philo->right_fork)
-	{
-		tmp_fork1 = philo->left_fork;
-		tmp_fork2 = philo->right_fork;
-	}
-	else
-	{
-		tmp_fork1 = philo->right_fork;
-		tmp_fork2 = philo->left_fork;
-	}
 	meals_eaten = 0;
 	while (1)
 	{
+		if (philo->nb_of_philos == 1)
+		{
+			pthread_mutex_lock(philo->left_fork);
+			safe_print(philo, "has taken left fork 🥢");
+			ft_sleep(philo->time_to_die, philo);
+			pthread_mutex_unlock(philo->left_fork);
+			pthread_mutex_lock(philo->stop_mutex);
+			if (*(philo->stop) == 1)
+			{
+				pthread_mutex_unlock(philo->stop_mutex);
+				return (NULL);
+			}
+			pthread_mutex_unlock(philo->stop_mutex);
+			
+		}
 		if (philo->id % 2 == 0)
+		{
 			usleep(1000);
-		pthread_mutex_lock(tmp_fork1);
-		safe_print(philo, "has taken the left fork 🥢");
+			pthread_mutex_lock(philo->left_fork);
+			safe_print(philo, "has taken left fork 🥢");
+	
+			pthread_mutex_lock(philo->right_fork);
+			safe_print(philo, "has taken right fork 🥢");
+		}
+		else
+		{
+			pthread_mutex_lock(philo->right_fork);
+			safe_print(philo, "has taken right fork 🥢");
+			pthread_mutex_lock(philo->left_fork);
+			safe_print(philo, "has taken left fork 🥢");
 
-		pthread_mutex_lock(tmp_fork2);
-		safe_print(philo, "has taken the right fork 🥢");
-
+		}
 		pthread_mutex_lock(philo->eating_mutex);
 		philo->last_meal = get_current_time();
 		//if (*(philo->stop) == 0)
-			safe_print(philo, "is eating 🍝");
-		if (philo->nb_times_to_eat > 0)
+		safe_print(philo, "is eating 🍝");
+		if (philo->nb_times_to_eat >= 0)
 		{
 			meals_eaten++;
 			// pthread_mutex_lock(philo->print_mutex);
@@ -193,17 +201,20 @@ void	*routine(void *arg)
 
 		}
 		pthread_mutex_unlock(philo->eating_mutex);
-		usleep(philo->time_to_eat * 1000);
-
-		pthread_mutex_unlock(tmp_fork2);
-		pthread_mutex_unlock(tmp_fork1);
-
-		// if (*(philo->stop) == 0)
-		// {
-			safe_print(philo, "is sleeping 😴");
-			usleep(philo->time_to_sleep * 1000);
-			safe_print(philo, "is thinking 🧠");
-		//}
+		ft_sleep(philo->time_to_eat, philo);
+		if (philo->id % 2 == 0)
+		{
+			pthread_mutex_unlock(philo->right_fork);
+			pthread_mutex_unlock(philo->left_fork);
+		}
+		else
+		{
+			pthread_mutex_unlock(philo->left_fork);
+			pthread_mutex_unlock(philo->right_fork);
+		}
+		safe_print(philo, "is sleeping 😴");
+		ft_sleep(philo->time_to_sleep, philo);
+		safe_print(philo, "is thinking 🧠");
 		pthread_mutex_lock(philo->stop_mutex);
 		if (*(philo->stop) == 1)
 		{
@@ -218,11 +229,9 @@ void	*routine(void *arg)
 int	init_data(t_data *data, char **argv)
 {
 	data->stop = 0;
-	//data->big_brother = NULL;
 	data->philos_amount = safe_atoi(argv[1]);
 	if (!alloc_philos_threads(argv, &data->philos, &data->threads))
 	return (-1);
-	//data->big_brother = malloc(sizeof(pthread_mutex_t));
 	data->fork = malloc(sizeof(pthread_mutex_t) * data->philos_amount);
 	if (!data->fork)
 	{
@@ -236,7 +245,6 @@ int	init_data(t_data *data, char **argv)
 int	main(int argc, char **argv)
 {
 	t_data	data;
-	//pthread_t	*big_brother;
 
 	data.philos = NULL;
 	data.threads = NULL;
@@ -255,38 +263,4 @@ int	main(int argc, char **argv)
 	free_all(&data);
 	return (0);
 }
-// int	main(int argc, char **argv)
-// {
-// 	t_philo *philos;
-// 	pthread_t *threads;
-// 	pthread_mutex_t	*fork;
-// 	t_data	data;
-// 	int	amount_philos;
 
-
-
-// (:
-
-
-
-// 	philos = NULL;
-// 	threads = NULL;
-// 	if (!(valid_input(argc, argv)) || !(alloc_philos_threads(argv, &philos, &threads)))
-// 		return (1);
-// 	amount_philos = safe_atoi(argv[1]);
-// 	fork = malloc(sizeof(pthread_mutex_t) * amount_philos);
-// 	if (!fork)
-// 	{
-// 		free_all(philos, threads, fork);
-// 		return (1);
-// 	}
-// 	init_philos(argv, philos, fork);
-// 	if (!fork_init(philos, threads, fork))
-// 		return (1);
-// 	if (!create_threads(philos, threads, fork))
-// 		return (1);
-// 	join_destroy(philos, threads, fork);
-// 	//print_philos(philos, philos->nb_of_philos);
-// 	free_all(philos, threads, fork);
-// 	return (0);
-// }
