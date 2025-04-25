@@ -1,14 +1,17 @@
 CC=cc
 FLAGS=-Wall -Werror -Wextra -g -pthread
-SRC=main.c\
-str_utils.c \
-big_brother.c \
-utils.c
+SRC=src/main.c\
+src/str_utils.c \
+src/utils.c \
+src/big_brother.c \
+src/init_mutex_data.c \
+src/init_philos.c \
+src/routine.c
 
 NAME=philo
 
-all=$(NAME)
-$(NAME): $(SRC) philo.h
+all: $(NAME)
+$(NAME): $(SRC) includes/philo.h
 	$(CC) $(FLAGS) -o $(NAME) $(SRC)
 
 clean:
