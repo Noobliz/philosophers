@@ -11,4 +11,6 @@
 ## Skills developed
 - Deep understanding of thread creation, management, and synchronization using mutexes.
 - Designing algorithms to prevent classic concurrency issues (deadlocks, starvation).
-- Fine-grained control of timing and resource sharing betwee
+- Fine-grained control of timing and resource sharing between concurrent entities.
+- Writing clean, thread-safe, and efficient C code under strict system constraints.
+
