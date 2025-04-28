@@ -1,9 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   routine.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lguiet <lguiet@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/28 13:23:57 by lguiet            #+#    #+#             */
+/*   Updated: 2025/04/28 13:26:39 by lguiet           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "../includes/philo.h"
 
 static int	one_philo(t_philo *philo)
 {
-
 	if (philo->nb_of_philos == 1)
 	{
 		pthread_mutex_lock(philo->left_fork);
@@ -17,13 +27,11 @@ static int	one_philo(t_philo *philo)
 
 static void	forks_attrib(t_philo *philo)
 {
-	
 	if (philo->id % 2 == 0)
 	{
 		usleep(1);
 		pthread_mutex_lock(philo->left_fork);
 		safe_print(philo, "has taken a fork 🥢");
-	
 		pthread_mutex_lock(philo->right_fork);
 		safe_print(philo, "has taken a fork 🥢");
 	}
@@ -33,8 +41,7 @@ static void	forks_attrib(t_philo *philo)
 		safe_print(philo, "has taken a fork 🥢");
 		pthread_mutex_lock(philo->left_fork);
 		safe_print(philo, "has taken a fork 🥢");
-	
-	 }
+	}
 }
 
 static void	forks_retriev(t_philo *philo)
@@ -66,14 +73,13 @@ static void	eating_routine(t_philo *philo, int *meals_eaten)
 	pthread_mutex_unlock(philo->eating_mutex);
 	ft_sleep(philo->time_to_eat, philo);
 	forks_retriev(philo);
-
 }
 
 void	*routine(void *arg)
 {
-	t_philo *philo;
-	int	meals_eaten;
-	
+	t_philo	*philo;
+	int		meals_eaten;
+
 	philo = (t_philo *)arg;
 	meals_eaten = 0;
 	if (one_philo(philo))
@@ -93,5 +99,5 @@ void	*routine(void *arg)
 		pthread_mutex_unlock(philo->stop_mutex);
 		usleep(200);
 	}
-	return NULL;
+	return (NULL);
 }

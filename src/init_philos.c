@@ -1,9 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init_philos.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lguiet <lguiet@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/28 13:21:17 by lguiet            #+#    #+#             */
+/*   Updated: 2025/04/28 13:23:05 by lguiet           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "../includes/philo.h"
 
 int	alloc_philos_threads(char **argv, t_philo **philos, pthread_t **threads)
 {
-	int amount_philos;
+	int	amount_philos;
 
 	amount_philos = safe_atoi(argv[1]);
 	*philos = malloc(sizeof(t_philo) * amount_philos);
@@ -19,6 +30,7 @@ int	alloc_philos_threads(char **argv, t_philo **philos, pthread_t **threads)
 	}
 	return (1);
 }
+
 void	start_time_meal(t_data *data)
 {
 	int	i;
@@ -41,12 +53,13 @@ int	create_threads(t_data *data)
 	i = 0;
 	j = 0;
 	start_time_meal(data);
-	while(i < data->philos->nb_of_philos)
+	while (i < data->philos->nb_of_philos)
 	{
-		if(pthread_create(&data->threads[i], NULL, &routine, &data->philos[i]) != 0)
+		if (pthread_create(&data->threads[i], NULL,
+				&routine, &data->philos[i]) != 0)
 		{
 			print_error("pthread_create error", "threads");
-			while(j < i)
+			while (j < i)
 			{
 				pthread_join(data->threads[j], NULL);
 				j++;
@@ -56,7 +69,6 @@ int	create_threads(t_data *data)
 		}
 		i++;
 	}
-	
 	return (1);
 }
 
